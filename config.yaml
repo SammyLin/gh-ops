@@ -1,0 +1,18 @@
+server:
+  port: 8080
+  base_url: https://ghops.3mi.tw
+
+github:
+  client_id: ${GITHUB_CLIENT_ID}
+  client_secret: ${GITHUB_CLIENT_SECRET}
+
+session:
+  secret: ${SESSION_SECRET}
+
+allowed_actions:
+  - create-repo
+  - merge-pr
+  - create-tag
+
+audit:
+  db_path: ./audit.db
