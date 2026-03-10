@@ -1,2 +1,5 @@
 audit.db
 *.exe
+gh-ops
+audit.db
+.DS_Store
