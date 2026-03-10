@@ -49,7 +49,7 @@ func New(clientID, clientSecret, baseURL, sessionSecret string) *Auth {
 		oauth: &oauth2.Config{
 			ClientID:     clientID,
 			ClientSecret: clientSecret,
-			Scopes:       []string{"repo", "admin:org"},
+			Scopes:       []string{"repo"},
 			Endpoint:     githubOAuth.Endpoint,
 			RedirectURL:  baseURL + "/auth/callback",
 		},
