@@ -13,6 +13,7 @@ allowed_actions:
   - create-repo
   - merge-pr
   - create-tag
+  - add-collaborator
 
 audit:
   db_path: ./audit.db
