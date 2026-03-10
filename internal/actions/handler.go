@@ -60,6 +60,8 @@ func (h *Handler) HandleAction(w http.ResponseWriter, r *http.Request) {
 		result, params, err = h.mergePR(r.Context(), client, r)
 	case "create-tag":
 		result, params, err = h.createTag(r.Context(), client, r)
+	case "add-collaborator":
+		result, params, err = h.addCollaborator(r.Context(), client, r)
 	default:
 		h.renderError(w, "Unknown action: "+action, http.StatusBadRequest)
 		return
@@ -225,6 +227,50 @@ func (h *Handler) createTag(ctx context.Context, client *github.Client, r *http.
 		shortSHA = sha[:8]
 	}
 	return fmt.Sprintf("Tag %s created in %s (at %s)", tag, repoFullName, shortSHA), params, nil
+}
+
+func (h *Handler) addCollaborator(ctx context.Context, client *github.Client, r *http.Request) (string, map[string]string, error) {
+	repo := r.URL.Query().Get("repo")
+	user := r.URL.Query().Get("user")
+	permission := r.URL.Query().Get("permission")
+
+	if repo == "" || user == "" {
+		return "", nil, fmt.Errorf("repo and user are required")
+	}
+
+	if permission == "" {
+		permission = "push"
+	}
+
+	// repo can be "owner/repo" or just "repo" (defaults to authenticated user)
+	var owner, repoName string
+	parts := strings.SplitN(repo, "/", 2)
+	if len(parts) == 2 {
+		owner, repoName = parts[0], parts[1]
+	} else {
+		repoName = repo
+		// Get authenticated user as owner
+		authUser, _, err := client.Users.Get(ctx, "")
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get authenticated user: %w", err)
+		}
+		owner = authUser.GetLogin()
+	}
+
+	params := map[string]string{
+		"repo":       owner + "/" + repoName,
+		"user":       user,
+		"permission": permission,
+	}
+
+	_, _, err := client.Repositories.AddCollaborator(ctx, owner, repoName, user, &github.RepositoryAddCollaboratorOptions{
+		Permission: permission,
+	})
+	if err != nil {
+		return "", params, fmt.Errorf("failed to add collaborator: %w", err)
+	}
+
+	return fmt.Sprintf("%s added to %s/%s with %s permission", user, owner, repoName, permission), params, nil
 }
 
 func (h *Handler) renderResult(w http.ResponseWriter, action, message string) {
