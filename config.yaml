@@ -1,6 +1,6 @@
 server:
-  port: 8080
-  base_url: https://ghops.3mi.tw
+  port: 9091
+  base_url: http://127.0.0.1:9091
 
 github:
   client_id: ${GITHUB_CLIENT_ID}
