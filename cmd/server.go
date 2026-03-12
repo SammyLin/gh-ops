@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -9,13 +10,14 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
 	"github.com/SammyLin/gh-ops/internal/actions"
 	"github.com/SammyLin/gh-ops/internal/audit"
 	"github.com/SammyLin/gh-ops/internal/auth"
 	"github.com/SammyLin/gh-ops/internal/config"
+	"github.com/SammyLin/gh-ops/internal/middleware"
 )
 
 // Run starts the gh-ops HTTP server.
@@ -48,20 +50,21 @@ func Run(configPath string, templateFS fs.FS) error {
 	r := chi.NewRouter()
 
 	// Middleware stack
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(chimw.Logger)
+	r.Use(chimw.Recoverer)
+	r.Use(chimw.RealIP)
+	r.Use(chimw.Timeout(30 * time.Second))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Content-Type"},
 		MaxAge:         300,
 	}))
-	r.Use(RateLimit(60, time.Minute))
+	r.Use(middleware.RateLimit(60, time.Minute))
 
 	// Public routes
-	r.Get("/", homeHandler(tmpl))
+	r.Get("/", homeHandler(tmpl, authHandler))
+	r.Get("/health", healthHandler)
 	r.Get("/auth/login", authHandler.LoginHandler)
 	r.Get("/auth/callback", authHandler.CallbackHandler)
 	r.Get("/auth/logout", authHandler.LogoutHandler)
@@ -77,9 +80,24 @@ func Run(configPath string, templateFS fs.FS) error {
 	return http.ListenAndServe(addr, r)
 }
 
-func homeHandler(tmpl *template.Template) http.HandlerFunc {
+func homeHandler(tmpl *template.Template, authHandler *auth.Auth) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_ = tmpl.ExecuteTemplate(w, "index.html", nil)
+
+		data := map[string]string{}
+
+		// Try to get user from session (non-blocking)
+		if user := authHandler.UserFromRequest(r); user != "" {
+			data["User"] = user
+		}
+
+		if err := tmpl.ExecuteTemplate(w, "home.html", data); err != nil {
+			http.Error(w, "template error", http.StatusInternalServerError)
+		}
 	}
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
