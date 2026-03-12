@@ -149,6 +149,16 @@ func UserFromContext(ctx context.Context) string {
 	return v
 }
 
+// UserFromRequest extracts the GitHub username from the session without requiring auth.
+func (a *Auth) UserFromRequest(r *http.Request) string {
+	session, err := a.store.Get(r, sessionName)
+	if err != nil {
+		return ""
+	}
+	user, _ := session.Values[userKey].(string)
+	return user
+}
+
 func generateState() string {
 	b := make([]byte, 16)
 	_, _ = rand.Read(b)

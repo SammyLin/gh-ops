@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -9,13 +10,14 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
 	"github.com/SammyLin/gh-ops/internal/actions"
 	"github.com/SammyLin/gh-ops/internal/audit"
 	"github.com/SammyLin/gh-ops/internal/auth"
 	"github.com/SammyLin/gh-ops/internal/config"
+	"github.com/SammyLin/gh-ops/internal/middleware"
 )
 
 // Run starts the gh-ops HTTP server.
@@ -29,7 +31,11 @@ func Run(configPath string, templateFS fs.FS) error {
 	if err != nil {
 		return fmt.Errorf("init audit log: %w", err)
 	}
-	defer auditLogger.Close()
+	defer func() {
+		if err := auditLogger.Close(); err != nil {
+			log.Printf("close audit logger: %v", err)
+		}
+	}()
 
 	authHandler := auth.New(
 		cfg.GitHub.ClientID,
@@ -48,20 +54,21 @@ func Run(configPath string, templateFS fs.FS) error {
 	r := chi.NewRouter()
 
 	// Middleware stack
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(chimw.Logger)
+	r.Use(chimw.Recoverer)
+	r.Use(chimw.RealIP)
+	r.Use(chimw.Timeout(30 * time.Second))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Content-Type"},
 		MaxAge:         300,
 	}))
-	r.Use(RateLimit(60, time.Minute))
+	r.Use(middleware.RateLimit(60, time.Minute))
 
 	// Public routes
-	r.Get("/", homeHandler)
+	r.Get("/", homeHandler(tmpl, authHandler))
+	r.Get("/health", healthHandler)
 	r.Get("/auth/login", authHandler.LoginHandler)
 	r.Get("/auth/callback", authHandler.CallbackHandler)
 	r.Get("/auth/logout", authHandler.LogoutHandler)
@@ -77,35 +84,26 @@ func Run(configPath string, templateFS fs.FS) error {
 	return http.ListenAndServe(addr, r)
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gh-ops</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; background: #f6f8fa;
-        }
-        .card {
-            background: #fff; border-radius: 12px; padding: 48px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-            text-align: center; max-width: 500px; width: 90%;
-        }
-        h1 { font-size: 28px; color: #1f2328; margin-bottom: 8px; font-weight: 700; }
-        p { color: #656d76; font-size: 16px; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>gh-ops</h1>
-        <p>GitHub Operations Web API</p>
-    </div>
-</body>
-</html>`)
+func homeHandler(tmpl *template.Template, authHandler *auth.Auth) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		data := map[string]string{}
+
+		// Try to get user from session (non-blocking)
+		if user := authHandler.UserFromRequest(r); user != "" {
+			data["User"] = user
+		}
+
+		if err := tmpl.ExecuteTemplate(w, "home.html", data); err != nil {
+			http.Error(w, "template error", http.StatusInternalServerError)
+		}
+	}
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"}); err != nil {
+		http.Error(w, "encode error", http.StatusInternalServerError)
+	}
 }
