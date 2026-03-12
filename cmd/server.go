@@ -31,7 +31,11 @@ func Run(configPath string, templateFS fs.FS) error {
 	if err != nil {
 		return fmt.Errorf("init audit log: %w", err)
 	}
-	defer auditLogger.Close()
+	defer func() {
+		if err := auditLogger.Close(); err != nil {
+			log.Printf("close audit logger: %v", err)
+		}
+	}()
 
 	authHandler := auth.New(
 		cfg.GitHub.ClientID,
@@ -99,5 +103,7 @@ func homeHandler(tmpl *template.Template, authHandler *auth.Auth) http.HandlerFu
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"}); err != nil {
+		http.Error(w, "encode error", http.StatusInternalServerError)
+	}
 }
