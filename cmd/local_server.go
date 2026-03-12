@@ -51,6 +51,10 @@ func runAction(actionName string, params map[string]string) error {
 }
 
 func runLocalServer(cfg *config.Config, actionName string, params map[string]string, tokenStore *auth.TokenStore) error {
+	if cfg.GitHub.ClientID == "" || cfg.GitHub.ClientSecret == "" {
+		return fmt.Errorf("GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET must be set (check your environment or config file)")
+	}
+
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return fmt.Errorf("failed to find free port: %w", err)
