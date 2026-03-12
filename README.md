@@ -9,6 +9,22 @@
 
 **One-click GitHub operations via OAuth.** A lightweight Go web service that lets agents generate action URLs — users click, authenticate with GitHub, and the operation executes.
 
+## Why gh-ops?
+
+> **Problem:** When AI agents create repositories on my personal GitHub account, it hurts my personal brand. But manually creating repos and inviting agents is tedious.
+>
+> **Solution:** gh-ops lets agents generate action URLs that require my OAuth authorization. I click, authenticate once, and the agent can operate on my behalf.
+
+**Before:**
+- Agent: "Can you create a repo?"
+- Me: (5 minutes later) "Done, here's the link"
+- Repeat for every project...
+
+**After:**
+- Agent: "Here's the link, please authorize"
+- Me: (2 clicks) "Approved"
+- Agent: (works automatically)
+
 ## Features
 
 - **One-click operations** — Create repos, merge PRs, create tags, add collaborators
@@ -56,6 +72,36 @@ docker run -p 8080:8080 \
   -e GITHUB_CLIENT_SECRET=xxx \
   -e SESSION_SECRET=xxx \
   gh-ops
+```
+
+### Homebrew
+
+```bash
+brew tap SammyLin/tap
+brew install gh-ops
+```
+
+To upgrade:
+
+```bash
+brew upgrade gh-ops
+```
+
+### ⚠️ macOS Gatekeeper Warning (for local binary)
+
+If you see a security warning when running gh-ops locally for the first time:
+
+> "Apple cannot verify whether gh-ops is malicious software"
+
+This is because gh-ops is not notarized by Apple. To allow it:
+
+1. Go to **System Settings** → **Privacy & Security**
+2. Click **"Open Anyway"** (or "Still Open")
+
+Or disable Gatekeeper temporarily:
+
+```bash
+sudo spctl --master-disable
 ```
 
 ## Configuration
@@ -301,6 +347,22 @@ go build -o gh-ops .
 # Release (requires goreleaser)
 goreleaser release --snapshot --clean
 ```
+
+## Commands
+
+gh-ops is a web service, not a CLI. Use these endpoints:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Home page |
+| `/health` | GET | Health check |
+| `/auth/login` | GET | GitHub OAuth login |
+| `/auth/logout` | GET | Logout |
+| `/auth/callback` | GET | OAuth callback |
+| `/action/create-repo` | GET | Create repository |
+| `/action/merge-pr` | GET | Merge pull request |
+| `/action/create-tag` | GET | Create git tag |
+| `/action/add-collaborator` | GET | Add collaborator |
 
 ## License
 

@@ -34,6 +34,18 @@ archives:
       - Dockerfile
       - README.md
 
+homebrew:
+  - name: gh-ops
+    repository:
+      owner: SammyLin
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    description: "One-click GitHub operations via OAuth"
+    homepage: "https://github.com/SammyLin/gh-ops"
+    url: "https://github.com/SammyLin/gh-ops/releases/download/{{ .Tag }}/"
+    binaries:
+      - gh-ops
+
 checksum:
   name_template: 'checksums.txt'
   algorithm: sha256
