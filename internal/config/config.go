@@ -21,8 +21,7 @@ type ServerConfig struct {
 }
 
 type GitHubConfig struct {
-	ClientID     string `yaml:"client_id"`
-	ClientSecret string `yaml:"client_secret"`
+	ClientID string `yaml:"client_id"`
 }
 
 type AuditConfig struct {

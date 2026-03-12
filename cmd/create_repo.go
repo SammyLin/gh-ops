@@ -1,16 +1,8 @@
 package cmd
 
 import (
-	"io/fs"
-
 	"github.com/spf13/cobra"
 )
-
-var templateFS fs.FS
-
-func SetTemplateFS(f fs.FS) {
-	templateFS = f
-}
 
 var createRepoCmd = &cobra.Command{
 	Use:   "create-repo",
