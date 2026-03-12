@@ -61,7 +61,7 @@ func Run(configPath string, templateFS fs.FS) error {
 	r.Use(RateLimit(60, time.Minute))
 
 	// Public routes
-	r.Get("/", homeHandler)
+	r.Get("/", homeHandler(tmpl))
 	r.Get("/auth/login", authHandler.LoginHandler)
 	r.Get("/auth/callback", authHandler.CallbackHandler)
 	r.Get("/auth/logout", authHandler.LogoutHandler)
@@ -77,35 +77,9 @@ func Run(configPath string, templateFS fs.FS) error {
 	return http.ListenAndServe(addr, r)
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gh-ops</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; background: #f6f8fa;
-        }
-        .card {
-            background: #fff; border-radius: 12px; padding: 48px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-            text-align: center; max-width: 500px; width: 90%;
-        }
-        h1 { font-size: 28px; color: #1f2328; margin-bottom: 8px; font-weight: 700; }
-        p { color: #656d76; font-size: 16px; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>gh-ops</h1>
-        <p>GitHub Operations Web API</p>
-    </div>
-</body>
-</html>`)
+func homeHandler(tmpl *template.Template) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "index.html", nil)
+	}
 }
