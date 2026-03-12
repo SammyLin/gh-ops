@@ -45,12 +45,3 @@ release:
     owner: SammyLin
     name: gh-ops
   draft: false
-
-dockers_v2:
-  - images:
-      - "ghcr.io/sammylin/gh-ops:{{ .Tag }}"
-      - "ghcr.io/sammylin/gh-ops:latest"
-    goos: linux
-    goarch:
-      - amd64
-      - arm64
