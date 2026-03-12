@@ -23,7 +23,6 @@ server:
   base_url: "https://example.com"
 github:
   client_id: "id123"
-  client_secret: "secret456"
 allowed_actions:
   - "merge"
   - "approve"
