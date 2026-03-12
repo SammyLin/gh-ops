@@ -1,0 +1,116 @@
+package config
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func writeTempConfig(t *testing.T, content string) string {
+	t.Helper()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func TestLoad_FullConfig(t *testing.T) {
+	yaml := `
+server:
+  port: 9090
+  base_url: "https://example.com"
+github:
+  client_id: "id123"
+  client_secret: "secret456"
+session:
+  secret: "my-secret"
+allowed_actions:
+  - "merge"
+  - "approve"
+audit:
+  db_path: "/tmp/audit.db"
+`
+	cfg, err := Load(writeTempConfig(t, yaml))
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if cfg.Server.Port != 9090 {
+		t.Errorf("Port = %d, want 9090", cfg.Server.Port)
+	}
+	if cfg.Server.BaseURL != "https://example.com" {
+		t.Errorf("BaseURL = %q, want https://example.com", cfg.Server.BaseURL)
+	}
+	if cfg.GitHub.ClientID != "id123" {
+		t.Errorf("ClientID = %q, want id123", cfg.GitHub.ClientID)
+	}
+	if cfg.Session.Secret != "my-secret" {
+		t.Errorf("Secret = %q, want my-secret", cfg.Session.Secret)
+	}
+	if cfg.Audit.DBPath != "/tmp/audit.db" {
+		t.Errorf("DBPath = %q, want /tmp/audit.db", cfg.Audit.DBPath)
+	}
+	if len(cfg.AllowedActions) != 2 {
+		t.Errorf("AllowedActions len = %d, want 2", len(cfg.AllowedActions))
+	}
+}
+
+func TestLoad_Defaults(t *testing.T) {
+	cfg, err := Load(writeTempConfig(t, "{}"))
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if cfg.Server.Port != 8080 {
+		t.Errorf("default Port = %d, want 8080", cfg.Server.Port)
+	}
+	if cfg.Audit.DBPath != "./audit.db" {
+		t.Errorf("default DBPath = %q, want ./audit.db", cfg.Audit.DBPath)
+	}
+	if cfg.Session.Secret != "change-me-in-production" {
+		t.Errorf("default Secret = %q, want change-me-in-production", cfg.Session.Secret)
+	}
+}
+
+func TestLoad_EnvExpansion(t *testing.T) {
+	t.Setenv("TEST_GH_CLIENT_ID", "env-id")
+	yaml := `
+github:
+  client_id: "$TEST_GH_CLIENT_ID"
+`
+	cfg, err := Load(writeTempConfig(t, yaml))
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if cfg.GitHub.ClientID != "env-id" {
+		t.Errorf("ClientID = %q, want env-id", cfg.GitHub.ClientID)
+	}
+}
+
+func TestLoad_FileNotFound(t *testing.T) {
+	_, err := Load("/nonexistent/config.yaml")
+	if err == nil {
+		t.Fatal("Load() should return error for missing file")
+	}
+}
+
+func TestLoad_InvalidYAML(t *testing.T) {
+	_, err := Load(writeTempConfig(t, ":::invalid"))
+	if err == nil {
+		t.Fatal("Load() should return error for invalid YAML")
+	}
+}
+
+func TestIsActionAllowed(t *testing.T) {
+	cfg := &Config{AllowedActions: []string{"merge", "approve"}}
+
+	if !cfg.IsActionAllowed("merge") {
+		t.Error("merge should be allowed")
+	}
+	if !cfg.IsActionAllowed("MERGE") {
+		t.Error("MERGE (case-insensitive) should be allowed")
+	}
+	if cfg.IsActionAllowed("delete") {
+		t.Error("delete should not be allowed")
+	}
+}

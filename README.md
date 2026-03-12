@@ -58,6 +58,49 @@ docker run -p 8080:8080 \
   gh-ops
 ```
 
+## Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+# Edit .env with your values
+```
+
+Required variables:
+- `GITHUB_CLIENT_ID` - Your GitHub OAuth App Client ID
+- `GITHUB_CLIENT_SECRET` - Your GitHub OAuth App Client Secret
+- `SESSION_SECRET` - Generate with: `openssl rand -hex 32`
+
+Optional variables:
+- `PORT` - Server port (default: 9091)
+- `BASE_URL` - Public URL for OAuth callbacks
+
+### config.yaml
+
+Alternatively, use `config.yaml`:
+
+```yaml
+server:
+  port: 9091
+  base_url: http://localhost:9091
+
+github:
+  client_id: ${GITHUB_CLIENT_ID}
+  client_secret: ${GITHUB_CLIENT_SECRET}
+
+session:
+  secret: ${SESSION_SECRET}
+
+allowed_actions:
+  - create-repo
+  - merge-pr
+  - create-tag
+  - add-collaborator
+```
+
 ## Usage
 
 ### Setup
