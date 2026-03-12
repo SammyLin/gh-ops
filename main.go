@@ -2,8 +2,6 @@ package main
 
 import (
 	"embed"
-	"flag"
-	"log"
 
 	"github.com/SammyLin/gh-ops/cmd"
 )
@@ -12,10 +10,6 @@ import (
 var templateFS embed.FS
 
 func main() {
-	configPath := flag.String("config", "config.yaml", "path to config file")
-	flag.Parse()
-
-	if err := cmd.Run(*configPath, templateFS); err != nil {
-		log.Fatal(err)
-	}
+	cmd.SetTemplateFS(templateFS)
+	cmd.Execute()
 }
