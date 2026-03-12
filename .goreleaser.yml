@@ -1,0 +1,102 @@
+project_name: gh-ops
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - id: gh-ops
+    main: .
+    binary: gh-ops
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+
+archives:
+  - id: default
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - config.yaml
+      - Dockerfile
+      - README.md
+
+homebrew:
+  - name: gh-ops
+    repository:
+      owner: SammyLin
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    description: "One-click GitHub operations via OAuth"
+    homepage: "https://github.com/SammyLin/gh-ops"
+    url: "https://github.com/SammyLin/gh-ops/releases/download/{{ .Tag }}/"
+    binaries:
+      - gh-ops
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+
+release:
+  github:
+    owner: SammyLin
+    name: gh-ops
+  draft: false
+  prerelease: auto
+
+dockers:
+  - image_templates:
+      - "ghops:{{ .Tag }}"
+      - "ghops:latest"
+      - "ghcr.io/sammylin/gh-ops:{{ .Tag }}"
+      - "ghcr.io/sammylin/gh-ops:latest"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .Commit }}"
+    goos: linux
+    goarch:
+      - amd64
+      - arm64
+
+docker_manifests:
+  - name_templates:
+      - "ghops:{{ .Tag }}-arm64"
+      - "ghcr.io/sammylin/gh-ops:{{ .Tag }}-arm64"
+    image_templates:
+      - "ghops:{{ .Tag }}-arm64"
+      - "ghcr.io/sammylin/gh-ops:{{ .Tag }}-arm64"
+    go_arch: arm64
+
+  - name_templates:
+      - "ghops:{{ .Tag }}-amd64"
+      - "ghcr.io/sammylin/gh-ops:{{ .Tag }}-amd64"
+    image_templates:
+      - "ghops:{{ .Tag }}-amd64"
+      - "ghcr.io/sammylin/gh-ops:{{ .Tag }}-amd64"
+    go_arch: amd64

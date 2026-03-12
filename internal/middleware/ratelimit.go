@@ -1,4 +1,4 @@
-package cmd
+package middleware
 
 import (
 	"net/http"

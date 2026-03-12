@@ -1,31 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gh-ops - Error</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; background: #f6f8fa;
-        }
-        .card {
-            background: #fff; border-radius: 12px; padding: 48px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-            text-align: center; max-width: 500px; width: 90%;
-        }
-        .icon { font-size: 56px; margin-bottom: 20px; }
-        h1 { font-size: 20px; color: #cf222e; margin-bottom: 8px; font-weight: 600; }
-        p { color: #656d76; font-size: 16px; line-height: 1.5; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <div class="icon">&#x274C;</div>
-        <h1>Error</h1>
-        <p>{{.Message}}</p>
+{{define "title"}}Error - gh-ops{{end}}
+{{define "content"}}
+<div class="w-full max-w-lg">
+    <div class="rounded-xl border border-border bg-white p-8 shadow-sm">
+        <div class="mb-6 flex items-center justify-center">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-red-600"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <h1 class="text-xl font-semibold text-red-600">Error</h1>
+        </div>
+
+        <div class="mt-6 rounded-lg border border-red-100 bg-red-50 px-4 py-3">
+            <p class="text-sm text-red-800">{{.Message}}</p>
+        </div>
+
+        <div class="mt-6 flex gap-3">
+            <a href="/" class="flex flex-1 items-center justify-center rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-cream-100">
+                Back to Home
+            </a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{{end}}
+
+{{template "base" .}}

@@ -1,0 +1,82 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{template "title" .}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: { 100: '#faf8f5', 200: '#f5f1eb', 300: '#ebe6dc' },
+                        ink: { 900: '#1a1a1a', 700: '#383838', 600: '#434343' },
+                        accent: { DEFAULT: '#ca8a04', hover: '#a16207', light: '#fef9c3' },
+                        highlight: '#fbbf24',
+                        border: '#e8e4dd',
+                        link: { DEFAULT: '#0d9488', hover: '#0f766e' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=jf-open-huninn:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', 'jf-open-huninn', system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-cream-100 text-ink-900 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-accent to-highlight rounded-xl flex items-center justify-center text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-ink-900">gh-ops</h1>
+                        <p class="text-sm text-ink-600">One-click GitHub operations via OAuth</p>
+                    </div>
+                </div>
+                <div class="text-sm text-ink-600">
+                    <span>Beta v0.1.0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            {{template "content" .}}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-border mt-12 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-ink-700 mb-2">有任何問題或建議嗎？歡迎與我聯繫！</p>
+            <div class="flex justify-center items-center space-x-4 text-sm">
+                <a href="https://twitter.com/SammyLinTw" target="_blank" class="text-link hover:text-link-hover flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                    @SammyLinTw
+                </a>
+                <span class="text-ink-600">|</span>
+                <a href="https://www.facebook.com/corn2277" target="_blank" class="text-link hover:text-link-hover flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    Sammy Lin
+                </a>
+            </div>
+            <p class="text-xs text-ink-600 mt-4">© 2026 gh-ops by Sammy Lin. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+{{end}}
