@@ -24,8 +24,6 @@ server:
 github:
   client_id: "id123"
   client_secret: "secret456"
-session:
-  secret: "my-secret"
 allowed_actions:
   - "merge"
   - "approve"
@@ -45,9 +43,6 @@ audit:
 	if cfg.GitHub.ClientID != "id123" {
 		t.Errorf("ClientID = %q, want id123", cfg.GitHub.ClientID)
 	}
-	if cfg.Session.Secret != "my-secret" {
-		t.Errorf("Secret = %q, want my-secret", cfg.Session.Secret)
-	}
 	if cfg.Audit.DBPath != "/tmp/audit.db" {
 		t.Errorf("DBPath = %q, want /tmp/audit.db", cfg.Audit.DBPath)
 	}
@@ -66,9 +61,6 @@ func TestLoad_Defaults(t *testing.T) {
 	}
 	if cfg.Audit.DBPath != "./audit.db" {
 		t.Errorf("default DBPath = %q, want ./audit.db", cfg.Audit.DBPath)
-	}
-	if cfg.Session.Secret != "change-me-in-production" {
-		t.Errorf("default Secret = %q, want change-me-in-production", cfg.Session.Secret)
 	}
 }
 

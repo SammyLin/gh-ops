@@ -6,9 +6,6 @@ github:
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
 
-session:
-  secret: ${SESSION_SECRET}
-
 allowed_actions:
   - create-repo
   - merge-pr

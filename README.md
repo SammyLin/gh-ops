@@ -63,17 +63,6 @@ cd gh-ops
 go build -o gh-ops .
 ```
 
-### Docker
-
-```bash
-docker build -t gh-ops .
-docker run -p 8080:8080 \
-  -e GITHUB_CLIENT_ID=xxx \
-  -e GITHUB_CLIENT_SECRET=xxx \
-  -e SESSION_SECRET=xxx \
-  gh-ops
-```
-
 ### Homebrew
 
 ```bash
@@ -118,7 +107,6 @@ cp .env.example .env
 Required variables:
 - `GITHUB_CLIENT_ID` - Your GitHub OAuth App Client ID
 - `GITHUB_CLIENT_SECRET` - Your GitHub OAuth App Client Secret
-- `SESSION_SECRET` - Generate with: `openssl rand -hex 32`
 
 Optional variables:
 - `PORT` - Server port (default: 9091)
@@ -136,9 +124,6 @@ server:
 github:
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
-
-session:
-  secret: ${SESSION_SECRET}
 
 allowed_actions:
   - create-repo
@@ -160,7 +145,6 @@ allowed_actions:
 ```bash
 export GITHUB_CLIENT_ID=your_client_id
 export GITHUB_CLIENT_SECRET=your_client_secret
-export SESSION_SECRET=your_session_secret
 ```
 
 3. Start the server:
@@ -254,9 +238,6 @@ github:
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
 
-session:
-  secret: ${SESSION_SECRET}
-
 allowed_actions:
   - create-repo
   - merge-pr
@@ -275,7 +256,6 @@ Environment variables are expanded in the config file using `${VAR}` syntax.
 |-----------------------|----------------------------------|----------------------|
 | `GITHUB_CLIENT_ID`    | GitHub OAuth App client ID       | —                    |
 | `GITHUB_CLIENT_SECRET`| GitHub OAuth App client secret   | —                    |
-| `SESSION_SECRET`      | Secret for session encryption    | —                    |
 
 ## Directory Structure
 
@@ -305,7 +285,6 @@ gh-ops/
 │       ├── result.html          # Success result page
 │       └── error.html           # Error page
 ├── config.yaml                  # Configuration file
-├── Dockerfile                   # Container build
 ├── .goreleaser.yml              # Release automation
 └── README.md
 ```

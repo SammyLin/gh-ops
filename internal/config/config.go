@@ -9,11 +9,10 @@ import (
 
 // Config holds all application configuration.
 type Config struct {
-	Server         ServerConfig  `yaml:"server"`
-	GitHub         GitHubConfig  `yaml:"github"`
-	Session        SessionConfig `yaml:"session"`
-	AllowedActions []string      `yaml:"allowed_actions"`
-	Audit          AuditConfig   `yaml:"audit"`
+	Server         ServerConfig `yaml:"server"`
+	GitHub         GitHubConfig `yaml:"github"`
+	AllowedActions []string     `yaml:"allowed_actions"`
+	Audit          AuditConfig  `yaml:"audit"`
 }
 
 type ServerConfig struct {
@@ -24,10 +23,6 @@ type ServerConfig struct {
 type GitHubConfig struct {
 	ClientID     string `yaml:"client_id"`
 	ClientSecret string `yaml:"client_secret"`
-}
-
-type SessionConfig struct {
-	Secret string `yaml:"secret"`
 }
 
 type AuditConfig struct {
@@ -54,10 +49,6 @@ func Load(path string) (*Config, error) {
 	if cfg.Audit.DBPath == "" {
 		cfg.Audit.DBPath = "./audit.db"
 	}
-	if cfg.Session.Secret == "" {
-		cfg.Session.Secret = "change-me-in-production"
-	}
-
 	return &cfg, nil
 }
 
