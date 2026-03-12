@@ -1,5 +1,13 @@
-audit.db
+# Secrets
+.env
+.env.local
+
+# Build
 *.exe
 gh-ops
 audit.db
+
+# IDE
 .DS_Store
+.idea/
+.vscode/
