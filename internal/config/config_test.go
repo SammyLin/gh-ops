@@ -55,8 +55,8 @@ func TestLoad_Defaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load() error: %v", err)
 	}
-	if cfg.Server.Port != 8080 {
-		t.Errorf("default Port = %d, want 8080", cfg.Server.Port)
+	if cfg.Server.Port != 9091 {
+		t.Errorf("default Port = %d, want 9091", cfg.Server.Port)
 	}
 	if cfg.Audit.DBPath != "./audit.db" {
 		t.Errorf("default DBPath = %q, want ./audit.db", cfg.Audit.DBPath)
@@ -78,10 +78,17 @@ github:
 	}
 }
 
-func TestLoad_FileNotFound(t *testing.T) {
-	_, err := Load("/nonexistent/config.yaml")
-	if err == nil {
-		t.Fatal("Load() should return error for missing file")
+func TestLoad_FileNotFound_FallsBackToDefaults(t *testing.T) {
+	t.Setenv("GITHUB_CLIENT_ID", "env-fallback-id")
+	cfg, err := Load("/nonexistent/config.yaml")
+	if err != nil {
+		t.Fatalf("Load() should not error for missing file, got: %v", err)
+	}
+	if cfg.Server.Port != 9091 {
+		t.Errorf("default Port = %d, want 9091", cfg.Server.Port)
+	}
+	if cfg.GitHub.ClientID != "env-fallback-id" {
+		t.Errorf("ClientID = %q, want env-fallback-id", cfg.GitHub.ClientID)
 	}
 }
 

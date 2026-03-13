@@ -29,9 +29,14 @@ type AuditConfig struct {
 }
 
 // Load reads and parses the config file, expanding environment variables.
+// If the config file does not exist, it falls back to a default config
+// populated from environment variables.
 func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return defaultConfig(), nil
+		}
 		return nil, err
 	}
 
@@ -42,13 +47,45 @@ func Load(path string) (*Config, error) {
 		return nil, err
 	}
 
+	applyDefaults(&cfg)
+	return &cfg, nil
+}
+
+func defaultConfig() *Config {
+	cfg := &Config{
+		Server: ServerConfig{
+			Port:    9091,
+			BaseURL: "http://127.0.0.1:9091",
+		},
+		GitHub: GitHubConfig{
+			ClientID: os.Getenv("GITHUB_CLIENT_ID"),
+		},
+		AllowedActions: []string{
+			"create-repo",
+			"merge-pr",
+			"create-tag",
+			"add-collaborator",
+		},
+		Audit: AuditConfig{
+			DBPath: "./audit.db",
+		},
+	}
+	return cfg
+}
+
+func applyDefaults(cfg *Config) {
 	if cfg.Server.Port == 0 {
-		cfg.Server.Port = 8080
+		cfg.Server.Port = 9091
+	}
+	if cfg.Server.BaseURL == "" {
+		cfg.Server.BaseURL = "http://127.0.0.1:9091"
+	}
+	if cfg.GitHub.ClientID == "" {
+		cfg.GitHub.ClientID = os.Getenv("GITHUB_CLIENT_ID")
 	}
 	if cfg.Audit.DBPath == "" {
 		cfg.Audit.DBPath = "./audit.db"
 	}
-	return &cfg, nil
 }
 
 // IsActionAllowed checks if the given action is in the allowlist.
