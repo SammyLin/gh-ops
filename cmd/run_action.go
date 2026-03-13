@@ -50,7 +50,7 @@ func runAction(actionName string, params map[string]string) error {
 	return runDeviceFlow(cfg, actionName, params, tokenStore)
 }
 
-func executeAction(cfg *config.Config, actionName string, params map[string]string, accessToken, ghUser string) (string, error) {
+func executeAction(cfg *config.ResolvedConfig, actionName string, params map[string]string, accessToken, ghUser string) (string, error) {
 	return actions.Execute(actionName, params, accessToken)
 }
 

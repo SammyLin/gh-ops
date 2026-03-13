@@ -23,6 +23,7 @@ server:
   base_url: "https://example.com"
 github:
   client_id: "id123"
+  client_secret: "secret456"
 allowed_actions:
   - "merge"
   - "approve"
@@ -41,6 +42,9 @@ audit:
 	}
 	if cfg.GitHub.ClientID != "id123" {
 		t.Errorf("ClientID = %q, want id123", cfg.GitHub.ClientID)
+	}
+	if cfg.GitHub.ClientSecret != "secret456" {
+		t.Errorf("ClientSecret = %q, want secret456", cfg.GitHub.ClientSecret)
 	}
 	if cfg.Audit.DBPath != "/tmp/audit.db" {
 		t.Errorf("DBPath = %q, want /tmp/audit.db", cfg.Audit.DBPath)
@@ -100,7 +104,7 @@ func TestLoad_InvalidYAML(t *testing.T) {
 }
 
 func TestIsActionAllowed(t *testing.T) {
-	cfg := &Config{AllowedActions: []string{"merge", "approve"}}
+	cfg := &ResolvedConfig{AllowedActions: []string{"merge", "approve"}}
 
 	if !cfg.IsActionAllowed("merge") {
 		t.Error("merge should be allowed")
@@ -110,5 +114,60 @@ func TestIsActionAllowed(t *testing.T) {
 	}
 	if cfg.IsActionAllowed("delete") {
 		t.Error("delete should not be allowed")
+	}
+}
+
+func TestLoad_SecretRefEnv(t *testing.T) {
+	t.Setenv("MY_CLIENT_ID", "from-env-ref")
+	yaml := `
+github:
+  client_id:
+    source: env
+    id: MY_CLIENT_ID
+`
+	cfg, err := Load(writeTempConfig(t, yaml))
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if cfg.GitHub.ClientID != "from-env-ref" {
+		t.Errorf("ClientID = %q, want from-env-ref", cfg.GitHub.ClientID)
+	}
+}
+
+func TestLoad_SecretRefExec(t *testing.T) {
+	yaml := `
+github:
+  client_id:
+    source: exec
+    command: "echo test-exec-id"
+`
+	cfg, err := Load(writeTempConfig(t, yaml))
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if cfg.GitHub.ClientID != "test-exec-id" {
+		t.Errorf("ClientID = %q, want test-exec-id", cfg.GitHub.ClientID)
+	}
+}
+
+func TestLoad_SecretRefFile(t *testing.T) {
+	dir := t.TempDir()
+	secretPath := filepath.Join(dir, "secret.txt")
+	if err := os.WriteFile(secretPath, []byte("file-secret-value\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	yaml := `
+github:
+  client_id:
+    source: file
+    id: "` + secretPath + `"
+`
+	cfg, err := Load(writeTempConfig(t, yaml))
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+	if cfg.GitHub.ClientID != "file-secret-value" {
+		t.Errorf("ClientID = %q, want file-secret-value", cfg.GitHub.ClientID)
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/SammyLin/gh-ops/internal/config"
 )
 
-func runDeviceFlow(cfg *config.Config, actionName string, params map[string]string, tokenStore *auth.TokenStore) error {
+func runDeviceFlow(cfg *config.ResolvedConfig, actionName string, params map[string]string, tokenStore *auth.TokenStore) error {
 	if cfg.GitHub.ClientID == "" {
 		return fmt.Errorf("GITHUB_CLIENT_ID must be set (check your environment or config file)")
 	}

@@ -3,6 +3,34 @@ server:
   base_url: http://127.0.0.1:9091
 
 github:
+  # Option 1: Plain string (or env var template)
+  # client_id: ${GITHUB_CLIENT_ID}
+  # client_secret: ${GITHUB_CLIENT_SECRET}
+
+  # Option 2: Read from environment variable
+  # client_id:
+  #   source: env
+  #   id: GITHUB_CLIENT_ID
+  # client_secret:
+  #   source: env
+  #   id: GITHUB_CLIENT_SECRET
+
+  # Option 3: Execute a command (e.g. psw-cli)
+  # client_id:
+  #   source: exec
+  #   command: "psw-cli decrypt GITHUB_CLIENT_ID"
+  # client_secret:
+  #   source: exec
+  #   command: "psw-cli decrypt GITHUB_CLIENT_SECRET"
+
+  # Option 4: Read from a file
+  # client_id:
+  #   source: file
+  #   id: /path/to/client_id.txt
+  # client_secret:
+  #   source: file
+  #   id: /path/to/client_secret.txt
+
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
 

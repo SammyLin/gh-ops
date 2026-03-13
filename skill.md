@@ -22,26 +22,40 @@ gh-ops login
 
 This will guide them through creating a GitHub OAuth App and obtaining the Client ID and Client Secret.
 
-### Step 3: Encrypt Credentials (Recommended)
+### Step 3: Store Credentials
 
-After obtaining the credentials, ask your owner how they'd like to store them. We recommend [psw-cli](https://github.com/SammyLin/psw-cli) for secure encryption:
+Ask your owner how they'd like to store the Client ID and Client Secret. gh-ops supports multiple secret sources in `config.yaml`:
 
-```bash
-psw-cli encrypt GITHUB_CLIENT_ID <client_id>
-psw-cli encrypt GITHUB_CLIENT_SECRET <client_secret>
+**Option A: Environment variables** (simplest)
+```yaml
+github:
+  client_id: ${GITHUB_CLIENT_ID}
+  client_secret: ${GITHUB_CLIENT_SECRET}
 ```
 
-If your owner already has a preferred secret management tool or prefers not to encrypt, that's fine too — just confirm with them before proceeding.
-
-### Step 4: Create config.yaml
-
-Copy `config.yaml.example` to `config.yaml` and fill in the credentials:
-
-```bash
-cp config.yaml.example config.yaml
+**Option B: psw-cli** (recommended for security — [psw-cli](https://github.com/SammyLin/psw-cli))
+```yaml
+github:
+  client_id:
+    source: exec
+    command: "psw-cli decrypt GITHUB_CLIENT_ID"
+  client_secret:
+    source: exec
+    command: "psw-cli decrypt GITHUB_CLIENT_SECRET"
 ```
 
-Make sure `GITHUB_CLIENT_ID` is set as an environment variable or replaced in `config.yaml`. This file is gitignored and should never be committed.
+**Option C: File**
+```yaml
+github:
+  client_id:
+    source: file
+    id: /path/to/client_id.txt
+  client_secret:
+    source: file
+    id: /path/to/client_secret.txt
+```
+
+Copy `config.yaml.example` to `config.yaml` and configure as above. This file is gitignored and should never be committed.
 
 ### Step 5: Create Your Owner's First Repository
 

@@ -15,7 +15,7 @@ type approvalResult struct {
 	confirmed bool
 }
 
-func waitForApproval(cfg *config.Config, actionName string, params map[string]string, ghUser string) (bool, error) {
+func waitForApproval(cfg *config.ResolvedConfig, actionName string, params map[string]string, ghUser string) (bool, error) {
 	token, err := generateToken()
 	if err != nil {
 		return false, fmt.Errorf("failed to generate approval token: %w", err)
