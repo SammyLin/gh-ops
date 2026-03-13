@@ -57,6 +57,17 @@ func runDeviceFlow(cfg *config.Config, actionName string, params map[string]stri
 		SavedAt:     time.Now().UTC(),
 	})
 
+	// Wait for approval
+	if !autoApprove {
+		confirmed, approvalErr := waitForApproval(cfg, actionName, params, ghUser)
+		if approvalErr != nil {
+			return fmt.Errorf("approval flow failed: %w", approvalErr)
+		}
+		if !confirmed {
+			return fmt.Errorf("action cancelled by user")
+		}
+	}
+
 	// Execute action
 	result, err := actions.Execute(actionName, params, accessToken)
 
