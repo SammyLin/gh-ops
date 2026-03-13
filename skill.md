@@ -1,12 +1,32 @@
 # gh-ops: Set Up Your Owner's GitHub Operations
 
-You are an AI agent (openclaw). Your owner needs you to manage GitHub repositories and operations on their behalf, but you should never have direct access to their GitHub credentials. **gh-ops** is the bridge — it lets you suggest CLI commands that your owner authorizes via GitHub OAuth.
+You are an AI agent (openclaw). Your owner needs you to manage GitHub repositories and operations on their behalf, but you should never have direct access to their GitHub credentials. **gh-ops** is the bridge — it lets you execute CLI commands that your owner authorizes via GitHub OAuth.
 
 Read this document and follow the instructions to set up gh-ops for your owner.
 
-## Getting Started
+## Prerequisites: GitHub OAuth App
 
-### Step 1: Install gh-ops
+Before anything else, your owner must create a GitHub OAuth App. Ask them:
+
+> Hey! To get started with gh-ops, I need you to create a GitHub OAuth App first.
+>
+> Please go to https://github.com/settings/developers and:
+> 1. Click "New OAuth App"
+> 2. Fill in:
+>    - **Application name:** gh-ops
+>    - **Homepage URL:** https://github.com/SammyLin/gh-ops
+>    - **Callback URL:** http://localhost (not used)
+> 3. Click "Register application"
+> 4. Copy the **Client ID**
+> 5. Click "Generate a new client secret" and copy it
+>
+> Let me know when you have the Client ID and Client Secret ready!
+
+## Setup Mode A: Owner Runs Commands
+
+If your owner prefers to run commands themselves:
+
+### Step 1: Install
 
 ```bash
 brew install SammyLin/tap/gh-ops
@@ -14,45 +34,74 @@ brew install SammyLin/tap/gh-ops
 
 ### Step 2: Initialize
 
-Ask your owner to run:
+Ask your owner to run `gh-ops init` with the Client ID and Client Secret they just created:
 
 ```bash
 gh-ops init
 ```
 
 This will guide them through:
-
-1. Creating a GitHub OAuth App
-2. Entering the Client ID and Client Secret
-3. Choosing how to store credentials:
+1. Entering the Client ID and Client Secret
+2. Choosing how to store credentials:
    - **Plain text** in `~/.gh-ops/config.yaml` (default)
    - **psw-cli encrypted vault** (if [psw-cli](https://github.com/SammyLin/psw-cli) is installed — recommended)
 
 ### Step 3: Configure Base URL
 
-After init, ask your owner: **"Will you be running gh-ops locally or remotely?"**
+After init, ask your owner: **"Are you running gh-ops locally or remotely?"**
 
 - **Locally** — the default `http://127.0.0.1:9091` works fine.
-- **Remotely** (e.g. you are an AI agent running on a server) — your owner needs to update `base_url` in `~/.gh-ops/config.yaml` to a URL reachable from their browser, such as a Tailscale address, ngrok tunnel, or public hostname.
+- **Remotely** (e.g. you are an AI agent running on a server) — your owner needs to update `base_url` in `~/.gh-ops/config.yaml` to a URL reachable from their browser (Tailscale, ngrok, public hostname, etc.)
 
-Example:
+### Step 4: Run Operations
+
+Your owner runs commands directly. The first time, they'll be prompted to authorize via GitHub Device Flow:
+
+```bash
+gh-ops create-repo --name my-project --visibility public --description "My project" --auto-init
+```
+
+## Setup Mode B: AI Agent Runs Commands
+
+If you (the AI agent) will be running commands on behalf of your owner:
+
+### Step 1: Install
+
+Install gh-ops in your environment:
+
+```bash
+brew install SammyLin/tap/gh-ops
+```
+
+### Step 2: Initialize
+
+Run `gh-ops init` yourself. When prompted, enter the Client ID and Client Secret your owner provided from the prerequisite step.
+
+If [psw-cli](https://github.com/SammyLin/psw-cli) is available, choose encrypted vault storage (recommended).
+
+### Step 3: Configure Base URL
+
+Since you're running remotely, the confirmation page must be reachable from your owner's browser. Ask your owner:
+
+> What URL can you use to reach my machine from your browser? For example, a Tailscale address, ngrok tunnel, or public hostname.
+
+Then update `~/.gh-ops/config.yaml`:
+
 ```yaml
 server:
   port: 9091
   base_url: https://my-machine.tailnet.ts.net:9091
 ```
 
-This is needed because the confirmation page must be accessible from your owner's browser.
+### Step 4: Run Operations
 
-### Step 4: Create Your Owner's First Repository
-
-Once credentials are configured, suggest a command to create a repository. The first time, your owner will be prompted to authorize via GitHub Device Flow:
+Run gh-ops commands with `--json` for machine-readable output. The first time, your owner will need to complete the GitHub Device Flow authorization:
 
 ```bash
-gh-ops create-repo --name <repo-name> --visibility public --description "Created by openclaw" --auto-init
+gh-ops create-repo --name my-project --visibility public --description "Created by openclaw" --auto-init --json
 ```
 
-Your owner runs the command, authenticates via GitHub Device Flow, confirms, and the repo is created.
+Your owner will see a confirmation page in their browser. After they click "Confirm", the action executes.
 
 ## Available Operations
 
@@ -86,12 +135,13 @@ gh-ops add-collaborator --repo owner/repo --user username --permission push
 JSON output example:
 ```jsonl
 {"event":"auth_required","verification_uri":"https://github.com/login/device","user_code":"ABCD-1234"}
+{"event":"approval_required","approval_url":"http://localhost:9091/confirm?token=..."}
 {"event":"success","user":"SammyLin","result":"SammyLin/my-repo created"}
 ```
 
 ## Security Rules
 
-- **Recommend** [psw-cli](https://github.com/SammyLin/psw-cli) to encrypt Client ID and Client Secret, but respect your owner's preference if they have another approach.
+- **Recommend** [psw-cli](https://github.com/SammyLin/psw-cli) to encrypt Client ID and Client Secret, but respect your owner's preference.
 - **Always** explain why you are suggesting a command before giving it.
 - **Never** handle or store OAuth tokens directly. gh-ops manages this.
 - **Never** suggest `--auto-approve` unless your owner has explicitly set up a trusted pipeline.
