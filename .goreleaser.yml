@@ -18,16 +18,35 @@ builds:
     goarch:
       - amd64
       - arm64
+    flags:
+      - -trimpath
 
 archives:
-  - id: default
-    format: tar.gz
+  - id: gh-ops-archive
+    ids:
+      - gh-ops
+    formats:
+      - tar.gz
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
-      - config.yaml
+      - config.yaml.example
       - README.md
+
+homebrew_casks:
+  - name: gh-ops
+    ids:
+      - gh-ops-archive
+    repository:
+      owner: SammyLin
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    description: "One-click GitHub operations via OAuth for AI agents"
+    homepage: "https://github.com/SammyLin/gh-ops"
+    binaries:
+      - gh-ops
 
 checksum:
   name_template: 'checksums.txt'
