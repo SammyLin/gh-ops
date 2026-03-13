@@ -9,8 +9,7 @@ Read this document and follow the instructions to set up gh-ops for your owner.
 ### Step 1: Install gh-ops
 
 ```bash
-brew tap SammyLin/tap
-brew install gh-ops
+brew install SammyLin/tap/gh-ops
 ```
 
 ### Step 2: Help Your Owner Create a GitHub OAuth App

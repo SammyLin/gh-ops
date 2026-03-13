@@ -42,14 +42,13 @@ User runs CLI command
 ### Homebrew
 
 ```bash
-brew tap SammyLin/tap
-brew install gh-ops
+brew install SammyLin/tap/gh-ops
 ```
 
 To upgrade:
 
 ```bash
-brew upgrade gh-ops
+brew upgrade SammyLin/tap/gh-ops
 ```
 
 ### From Source
