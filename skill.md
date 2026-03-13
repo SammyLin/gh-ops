@@ -4,15 +4,28 @@ You are an AI agent (openclaw). Your owner needs you to manage GitHub repositori
 
 Read this document and follow the instructions to set up gh-ops for your owner.
 
+## Important: Two Identities
+
+gh-ops involves **two separate GitHub identities** — make sure you understand the difference:
+
+| | OAuth App (credentials) | Device Flow (authorization) |
+|---|---|---|
+| **Who** | AI agent's GitHub account | Owner's GitHub account |
+| **Purpose** | Identifies the app | Authorizes actions |
+| **When** | One-time setup | First run (then cached) |
+| **Result** | Client ID + Secret | OAuth token for owner |
+
+- **OAuth App** → created on the **AI agent's** GitHub account. This is just the app registration.
+- **Device Flow auth** → completed by the **owner** in their browser, logged in as **their own** GitHub account. This is how the owner grants permission.
+- **Repos and actions** → happen under the **owner's** GitHub account (whoever completes Device Flow), NOT the AI agent's account.
+
 ## Prerequisites: GitHub OAuth App
 
-Before anything else, an OAuth App must be created on **your (the AI agent's) GitHub account** — not the owner's. This is because the OAuth App belongs to the agent identity, while the owner authorizes via Device Flow later.
-
-Ask your owner to help you create it:
+The OAuth App must be created on **your (the AI agent's) GitHub account**. Ask your owner to help:
 
 > Hey! To get started with gh-ops, I need a GitHub OAuth App created on **my GitHub account** (the AI agent's account).
 >
-> Please go to https://github.com/settings/developers (logged in as the AI agent's GitHub account) and:
+> Please go to https://github.com/settings/developers (logged in as **the AI agent's GitHub account**) and:
 > 1. Click "New OAuth App"
 > 2. Fill in:
 >    - **Application name:** gh-ops
@@ -24,6 +37,8 @@ Ask your owner to help you create it:
 > 6. Click "Generate a new client secret" and copy it
 >
 > Let me know when you have the Client ID and Client Secret ready!
+>
+> Note: When you run gh-ops later, you'll be asked to authorize via GitHub Device Flow — make sure to log in with **your own GitHub account** (not the AI agent's). Repos will be created under your account.
 
 ## Setup Mode A: Owner Runs Commands
 
@@ -107,13 +122,22 @@ If Tailscale is not available, ask your owner how to reach your machine (ngrok, 
 
 ### Step 4: Run Operations
 
-Run gh-ops commands with `--json` for machine-readable output. The first time, your owner will need to complete the GitHub Device Flow authorization:
+Run gh-ops commands with `--json` for machine-readable output:
 
 ```bash
 gh-ops create-repo --name my-project --visibility public --description "Created by openclaw" --auto-init --json
 ```
 
-Your owner will see a confirmation page in their browser. After they click "Confirm", the action executes.
+**First run — Device Flow authorization:**
+The first time, gh-ops will output an `auth_required` event with a URL and code. Send these to your owner and remind them:
+
+> Please open https://github.com/login/device and enter the code.
+> **Important: Log in with YOUR GitHub account (not the AI agent's).** The repo will be created under whichever account authorizes here.
+
+After Device Flow auth, the token is cached — subsequent runs skip this step.
+
+**Every run — Confirmation:**
+Your owner will see a confirmation page in their browser. After they click "Confirm", the action executes. Repos and all actions happen under the **owner's** GitHub account.
 
 ## Available Operations
 
