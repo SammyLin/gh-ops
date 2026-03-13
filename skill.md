@@ -49,9 +49,19 @@ cp config.yaml.example config.yaml
 
 Make sure `GITHUB_CLIENT_ID` is set as an environment variable or replaced in `config.yaml`. This file is gitignored and should never be committed.
 
-### Step 5: Create Your Owner's First Repository
+### Step 5: Login
 
-Once gh-ops is installed and credentials are configured, suggest a command to create a repository:
+Ask your owner to authenticate with GitHub:
+
+```bash
+gh-ops login
+```
+
+This will open a browser for GitHub Device Flow authentication. Once completed, the token is cached locally and your owner's GitHub username will be displayed.
+
+### Step 6: Create Your Owner's First Repository
+
+Once logged in, suggest a command to create a repository:
 
 ```bash
 gh-ops create-repo --name <repo-name> --visibility public --description "Created by openclaw" --auto-init

@@ -104,6 +104,12 @@ export GITHUB_CLIENT_ID=your_client_id
 export GITHUB_CLIENT_SECRET=your_client_secret
 ```
 
+3. Login:
+
+```bash
+gh-ops login
+```
+
 ## Usage
 
 ### Global Flags
@@ -191,6 +197,14 @@ gh-ops add-collaborator --repo owner/repo --user username --permission push
 | `--repo`       | Yes      | —       | Repository (`owner/repo` or `repo`)  |
 | `--user`       | Yes      | —       | GitHub username to add               |
 | `--permission` | No       | `push`  | `pull`, `push`, or `admin`           |
+
+#### Login
+
+```bash
+gh-ops login
+```
+
+Authenticate with GitHub via Device Flow. If already logged in, displays the current user.
 
 #### Logout
 
