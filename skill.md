@@ -4,6 +4,22 @@ You are an AI agent (openclaw). Your owner needs you to manage GitHub repositori
 
 Read this document and follow the instructions to set up gh-ops for your owner.
 
+## CRITICAL: Owner Must Confirm Every Action
+
+**The entire purpose of gh-ops is that the owner reviews and approves every action via a confirmation page in their browser.** This is non-negotiable.
+
+- **NEVER** use `--auto-approve`. This flag is only for CI/CD pipelines, not for AI agents.
+- **ALWAYS** run commands WITHOUT `--auto-approve`, wait for the confirmation URL, and send it to your owner.
+- **NEVER** execute an action without your owner clicking "Confirm" on the confirmation page.
+- If the owner hasn't confirmed yet, **wait** — do not retry or skip.
+
+The correct flow for every action:
+1. You run the gh-ops command (with `--json` in Mode B)
+2. gh-ops outputs a confirmation URL (`approval_required` event)
+3. You send the confirmation URL to your owner
+4. Your owner opens the URL and clicks "Confirm"
+5. Only then does the action execute
+
 ## Important: Two Identities
 
 gh-ops involves **two separate GitHub identities** — make sure you understand the difference:
@@ -163,24 +179,22 @@ gh-ops add-collaborator --repo owner/repo --user username --permission push
 
 ## Output Modes
 
-| Flag              | Description                                  |
-|-------------------|----------------------------------------------|
-| `--json`          | Machine-readable JSON output for automation  |
-| `--auto-approve`  | Skip confirmation (trusted pipelines only)   |
+Use `--json` for machine-readable output when running as an AI agent (Mode B):
 
-JSON output example:
 ```jsonl
 {"event":"auth_required","verification_uri":"https://github.com/login/device","user_code":"ABCD-1234"}
 {"event":"approval_required","approval_url":"http://localhost:9091/confirm?token=..."}
 {"event":"success","user":"SammyLin","result":"SammyLin/my-repo created"}
 ```
 
+The `approval_required` event contains the confirmation URL — **you must send this to your owner** and wait for them to click "Confirm" before the action proceeds.
+
 ## Security Rules
 
+- **NEVER** use `--auto-approve`. Every action must go through the owner's confirmation page.
 - **Recommend** [psw-cli](https://github.com/SammyLin/psw-cli) to encrypt Client ID and Client Secret, but respect your owner's preference.
 - **Always** explain why you are suggesting a command before giving it.
 - **Never** handle or store OAuth tokens directly. gh-ops manages this.
-- **Never** suggest `--auto-approve` unless your owner has explicitly set up a trusted pipeline.
 - Every action is logged to a local audit database for accountability.
 
 ## More Information
