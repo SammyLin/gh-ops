@@ -14,11 +14,12 @@ Before anything else, your owner must create a GitHub OAuth App. Ask them:
 > 1. Click "New OAuth App"
 > 2. Fill in:
 >    - **Application name:** gh-ops
->    - **Homepage URL:** https://github.com/SammyLin/gh-ops
->    - **Callback URL:** http://localhost (not used)
-> 3. Click "Register application"
-> 4. Copy the **Client ID**
-> 5. Click "Generate a new client secret" and copy it
+>    - **Homepage URL:** http://localhost
+>    - **Callback URL:** http://localhost
+> 3. **Check "Enable Device Flow"** — this is required!
+> 4. Click "Register application"
+> 5. Copy the **Client ID**
+> 6. Click "Generate a new client secret" and copy it
 >
 > Let me know when you have the Client ID and Client Secret ready!
 
