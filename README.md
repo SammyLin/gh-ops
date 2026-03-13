@@ -93,22 +93,13 @@ Environment variables are expanded in the config file using `${VAR}` syntax.
 
 ### Setup
 
-1. Create a [GitHub OAuth App](https://github.com/settings/developers)
-   - No callback URL needed (uses Device Flow)
-   - Scopes needed: `repo`
-
-2. Set the environment variable:
+1. Initialize (creates `~/.gh-ops/config.yaml`):
 
 ```bash
-export GITHUB_CLIENT_ID=your_client_id
-export GITHUB_CLIENT_SECRET=your_client_secret
+gh-ops init
 ```
 
-3. Login:
-
-```bash
-gh-ops login
-```
+This guides you through creating a GitHub OAuth App and saves the credentials. The first time you run an action, you'll be prompted to authorize via GitHub Device Flow.
 
 ## Usage
 
@@ -198,21 +189,13 @@ gh-ops add-collaborator --repo owner/repo --user username --permission push
 | `--user`       | Yes      | —       | GitHub username to add               |
 | `--permission` | No       | `push`  | `pull`, `push`, or `admin`           |
 
-#### Login
+#### Init
 
 ```bash
-gh-ops login
+gh-ops init
 ```
 
-Guides you through creating a GitHub OAuth App and setting up credentials. Device Flow authentication happens automatically when you run your first action.
-
-#### Logout
-
-```bash
-gh-ops logout
-```
-
-Removes the cached OAuth token from `~/.config/gh-ops/token.json`.
+Guides you through creating a GitHub OAuth App and saves credentials to `~/.gh-ops/config.yaml`.
 
 ## Audit Log
 

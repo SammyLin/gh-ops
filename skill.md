@@ -12,19 +12,19 @@ Read this document and follow the instructions to set up gh-ops for your owner.
 brew install SammyLin/tap/gh-ops
 ```
 
-### Step 2: Set Up Credentials
+### Step 2: Initialize
 
 Ask your owner to run:
 
 ```bash
-gh-ops login
+gh-ops init
 ```
 
-This will guide them through creating a GitHub OAuth App and obtaining the Client ID and Client Secret.
+This will guide them through creating a GitHub OAuth App, entering the Client ID and Client Secret, and saving them to `~/.gh-ops/config.yaml`.
 
-### Step 3: Store Credentials
+### Step 3: Advanced Credential Storage (Optional)
 
-Ask your owner how they'd like to store the Client ID and Client Secret. gh-ops supports multiple secret sources in `config.yaml`:
+By default, `gh-ops init` stores credentials as plain text in `~/.gh-ops/config.yaml` (with `0600` permissions). For extra security, your owner can edit the config to use other secret sources:
 
 **Option A: Environment variables** (simplest)
 ```yaml
@@ -65,7 +65,7 @@ github:
 
 Copy `config.yaml.example` to `config.yaml` and configure as above. This file is gitignored and should never be committed.
 
-### Step 5: Create Your Owner's First Repository
+### Step 4: Create Your Owner's First Repository
 
 Once credentials are configured, suggest a command to create a repository. The first time, your owner will be prompted to authorize via GitHub Device Flow:
 

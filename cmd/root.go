@@ -28,7 +28,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&configPath, "config", "config.yaml", "config file path")
+	rootCmd.PersistentFlags().StringVar(&configPath, "config", defaultConfigPath(), "config file path")
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output in JSON format")
 	rootCmd.PersistentFlags().BoolVar(&autoApprove, "auto-approve", false, "skip web confirmation")
 }
