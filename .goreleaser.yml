@@ -39,11 +39,11 @@ brews:
   - name: gh-ops
     ids:
       - gh-ops-archive
+    directory: Formula
     repository:
       owner: SammyLin
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-      directory: Formula
     description: "One-click GitHub operations via OAuth for AI agents"
     homepage: "https://github.com/SammyLin/gh-ops"
     license: "MIT"
