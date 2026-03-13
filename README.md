@@ -67,10 +67,11 @@ go build -o gh-ops .
 ```yaml
 server:
   port: 9091
-  base_url: http://localhost:9091
+  base_url: http://127.0.0.1:9091
 
 github:
   client_id: ${GITHUB_CLIENT_ID}
+  client_secret: ${GITHUB_CLIENT_SECRET}
 
 allowed_actions:
   - create-repo
@@ -86,9 +87,10 @@ Environment variables are expanded in the config file using `${VAR}` syntax.
 
 ### Environment Variables
 
-| Variable           | Description                 |
-|--------------------|-----------------------------|
-| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID  |
+| Variable               | Description                     |
+|------------------------|---------------------------------|
+| `GITHUB_CLIENT_ID`     | GitHub OAuth App client ID      |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret  |
 
 ### Setup
 
@@ -100,6 +102,7 @@ Environment variables are expanded in the config file using `${VAR}` syntax.
 
 ```bash
 export GITHUB_CLIENT_ID=your_client_id
+export GITHUB_CLIENT_SECRET=your_client_secret
 ```
 
 ## Usage
