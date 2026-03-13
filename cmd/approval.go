@@ -35,7 +35,7 @@ func waitForApproval(cfg *config.Config, actionName string, params map[string]st
 		}
 		if r.Method == http.MethodPost {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			fmt.Fprint(w, renderSuccessPage())
+			_, _ = fmt.Fprint(w, renderSuccessPage())
 			ch <- approvalResult{confirmed: true}
 			return
 		}
@@ -144,7 +144,7 @@ func renderApprovalPage(w http.ResponseWriter, actionName string, params map[str
 	var detailRows strings.Builder
 	for k, v := range params {
 		if v != "" {
-			detailRows.WriteString(fmt.Sprintf(`<div class="detail-row"><span class="label">%s</span><span class="value">%s</span></div>`, k, v))
+			fmt.Fprintf(&detailRows, `<div class="detail-row"><span class="label">%s</span><span class="value">%s</span></div>`, k, v)
 		}
 	}
 
@@ -181,7 +181,7 @@ func renderApprovalPage(w http.ResponseWriter, actionName string, params map[str
 </html>`, pageStyle, renderHeader(), ghUser, actionName, detailRows.String(), token, footerHTML)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, html)
+	_, _ = fmt.Fprint(w, html)
 }
 
 func renderSuccessPage() string {
