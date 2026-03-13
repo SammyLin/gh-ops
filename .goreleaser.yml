@@ -35,7 +35,7 @@ archives:
       - config.yaml.example
       - README.md
 
-homebrew_casks:
+brews:
   - name: gh-ops
     ids:
       - gh-ops-archive
@@ -45,8 +45,11 @@ homebrew_casks:
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     description: "One-click GitHub operations via OAuth for AI agents"
     homepage: "https://github.com/SammyLin/gh-ops"
-    binaries:
-      - gh-ops
+    license: "MIT"
+    install: |
+      bin.install "gh-ops"
+    test: |
+      assert_match "One-click GitHub operations", shell_output("#{bin}/gh-ops --help")
 
 checksum:
   name_template: 'checksums.txt'
