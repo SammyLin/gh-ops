@@ -40,7 +40,17 @@ psw-cli encrypt GITHUB_CLIENT_SECRET <client_secret>
 
 If your owner already has a preferred secret management tool or prefers not to encrypt, that's fine too — just confirm with them before proceeding.
 
-### Step 4: Create Your Owner's First Repository
+### Step 4: Create config.yaml
+
+Copy `config.yaml.example` to `config.yaml` and fill in the credentials:
+
+```bash
+cp config.yaml.example config.yaml
+```
+
+Make sure `GITHUB_CLIENT_ID` is set as an environment variable or replaced in `config.yaml`. This file is gitignored and should never be committed.
+
+### Step 5: Create Your Owner's First Repository
 
 Once gh-ops is installed and credentials are configured, suggest a command to create a repository:
 

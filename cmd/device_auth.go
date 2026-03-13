@@ -57,6 +57,17 @@ func runDeviceFlow(cfg *config.Config, actionName string, params map[string]stri
 		SavedAt:     time.Now().UTC(),
 	})
 
+	// Wait for approval
+	if !autoApprove {
+		confirmed, approvalErr := waitForApproval(cfg, actionName, params, ghUser)
+		if approvalErr != nil {
+			return fmt.Errorf("approval flow failed: %w", approvalErr)
+		}
+		if !confirmed {
+			return fmt.Errorf("action cancelled by user")
+		}
+	}
+
 	// Execute action
 	result, err := actions.Execute(actionName, params, accessToken)
 
@@ -65,7 +76,7 @@ func runDeviceFlow(cfg *config.Config, actionName string, params map[string]stri
 	if auditErr != nil {
 		log.Printf("Warning: audit log disabled: %v", auditErr)
 	} else {
-		defer auditLogger.Close()
+		defer func() { _ = auditLogger.Close() }()
 		logResult := "success"
 		if err != nil {
 			logResult = "error: " + err.Error()
