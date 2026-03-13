@@ -34,14 +34,22 @@ github:
 ```
 
 **Option B: psw-cli** (recommended for security — [psw-cli](https://github.com/SammyLin/psw-cli))
+
+First, store the credentials in a psw-cli vault:
+```bash
+psw-cli set GITHUB_CLIENT_ID <client_id> -v my-vault
+psw-cli set GITHUB_CLIENT_SECRET <client_secret> -v my-vault
+```
+
+Then reference them in config.yaml:
 ```yaml
 github:
   client_id:
     source: exec
-    command: "psw-cli decrypt GITHUB_CLIENT_ID"
+    command: "psw-cli get GITHUB_CLIENT_ID -v my-vault --raw"
   client_secret:
     source: exec
-    command: "psw-cli decrypt GITHUB_CLIENT_SECRET"
+    command: "psw-cli get GITHUB_CLIENT_SECRET -v my-vault --raw"
 ```
 
 **Option C: File**

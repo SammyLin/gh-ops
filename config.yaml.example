@@ -18,10 +18,10 @@ github:
   # Option 3: Execute a command (e.g. psw-cli)
   # client_id:
   #   source: exec
-  #   command: "psw-cli decrypt GITHUB_CLIENT_ID"
+  #   command: "psw-cli get GITHUB_CLIENT_ID -v my-vault --raw"
   # client_secret:
   #   source: exec
-  #   command: "psw-cli decrypt GITHUB_CLIENT_SECRET"
+  #   command: "psw-cli get GITHUB_CLIENT_SECRET -v my-vault --raw"
 
   # Option 4: Read from a file
   # client_id:
