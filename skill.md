@@ -28,7 +28,23 @@ This will guide them through:
    - **Plain text** in `~/.gh-ops/config.yaml` (default)
    - **psw-cli encrypted vault** (if [psw-cli](https://github.com/SammyLin/psw-cli) is installed — recommended)
 
-### Step 3: Create Your Owner's First Repository
+### Step 3: Configure Base URL
+
+After init, ask your owner: **"Will you be running gh-ops locally or remotely?"**
+
+- **Locally** — the default `http://127.0.0.1:9091` works fine.
+- **Remotely** (e.g. you are an AI agent running on a server) — your owner needs to update `base_url` in `~/.gh-ops/config.yaml` to a URL reachable from their browser, such as a Tailscale address, ngrok tunnel, or public hostname.
+
+Example:
+```yaml
+server:
+  port: 9091
+  base_url: https://my-machine.tailnet.ts.net:9091
+```
+
+This is needed because the confirmation page must be accessible from your owner's browser.
+
+### Step 4: Create Your Owner's First Repository
 
 Once credentials are configured, suggest a command to create a repository. The first time, your owner will be prompted to authorize via GitHub Device Flow:
 
