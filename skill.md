@@ -84,17 +84,26 @@ If [psw-cli](https://github.com/SammyLin/psw-cli) is available, choose encrypted
 
 ### Step 3: Configure Base URL
 
-Since you're running remotely, the confirmation page must be reachable from your owner's browser. Ask your owner:
+Since you're running remotely, the confirmation page must be reachable from your owner's browser.
 
-> What URL can you use to reach my machine from your browser? For example, a Tailscale address, ngrok tunnel, or public hostname.
+**Check for Tailscale first** — run `tailscale status` to see if Tailscale is installed and connected. If it is, use your Tailscale hostname as the base URL. This is the simplest and most reliable approach — no need to set up tunnels.
 
-Then update `~/.gh-ops/config.yaml`:
+```bash
+# Check if Tailscale is available
+tailscale status
+# Get your machine's Tailscale FQDN
+tailscale status --self --json | jq -r '.Self.DNSName' | sed 's/\.$//'
+```
+
+If Tailscale is available, update `~/.gh-ops/config.yaml`:
 
 ```yaml
 server:
   port: 9091
-  base_url: https://my-machine.tailnet.ts.net:9091
+  base_url: http://<your-tailscale-hostname>:9091
 ```
+
+If Tailscale is not available, ask your owner how to reach your machine (ngrok, public hostname, etc.). **Do not** create tunnels (e.g. Cloudflare tunnel) unless your owner explicitly asks for it — keep it simple.
 
 ### Step 4: Run Operations
 
