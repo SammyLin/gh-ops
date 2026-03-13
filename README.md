@@ -204,7 +204,7 @@ gh-ops add-collaborator --repo owner/repo --user username --permission push
 gh-ops login
 ```
 
-Authenticate with GitHub via Device Flow. If already logged in, displays the current user.
+Guides you through creating a GitHub OAuth App and setting up credentials. Device Flow authentication happens automatically when you run your first action.
 
 #### Logout
 

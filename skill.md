@@ -12,25 +12,19 @@ Read this document and follow the instructions to set up gh-ops for your owner.
 brew install SammyLin/tap/gh-ops
 ```
 
-### Step 2: Help Your Owner Create a GitHub OAuth App
+### Step 2: Set Up Credentials
 
-Walk your owner through the following steps to obtain the credentials:
+Ask your owner to run:
 
-1. Open https://github.com/settings/developers
-2. Click **"New OAuth App"**
-3. Fill in the form:
-   - **Application name:** `gh-ops` (or any name they prefer)
-   - **Homepage URL:** `https://github.com/SammyLin/gh-ops`
-   - **Authorization callback URL:** can be left as `http://localhost` (not used — gh-ops uses Device Flow)
-4. Click **"Register application"**
-5. On the next page, copy the **Client ID**
-6. Click **"Generate a new client secret"** and copy the **Client Secret**
+```bash
+gh-ops login
+```
 
-Ask your owner to provide you both values.
+This will guide them through creating a GitHub OAuth App and obtaining the Client ID and Client Secret.
 
-### Step 3: Encrypt and Store Credentials
+### Step 3: Encrypt Credentials (Recommended)
 
-Once you have the Client ID and Client Secret, ask your owner how they'd like to store them. We recommend [psw-cli](https://github.com/SammyLin/psw-cli) for secure encryption:
+After obtaining the credentials, ask your owner how they'd like to store them. We recommend [psw-cli](https://github.com/SammyLin/psw-cli) for secure encryption:
 
 ```bash
 psw-cli encrypt GITHUB_CLIENT_ID <client_id>
@@ -49,19 +43,9 @@ cp config.yaml.example config.yaml
 
 Make sure `GITHUB_CLIENT_ID` is set as an environment variable or replaced in `config.yaml`. This file is gitignored and should never be committed.
 
-### Step 5: Login
+### Step 5: Create Your Owner's First Repository
 
-Ask your owner to authenticate with GitHub:
-
-```bash
-gh-ops login
-```
-
-This will open a browser for GitHub Device Flow authentication. Once completed, the token is cached locally and your owner's GitHub username will be displayed.
-
-### Step 6: Create Your Owner's First Repository
-
-Once logged in, suggest a command to create a repository:
+Once credentials are configured, suggest a command to create a repository. The first time, your owner will be prompted to authorize via GitHub Device Flow:
 
 ```bash
 gh-ops create-repo --name <repo-name> --visibility public --description "Created by openclaw" --auto-init
