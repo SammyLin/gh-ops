@@ -26,6 +26,17 @@ func runAction(actionName string, params map[string]string) error {
 
 	if cached != nil {
 		fmt.Printf("Using cached token for %s...\n", cached.GitHubUser)
+
+		if !autoApprove {
+			confirmed, err := waitForApproval(cfg, actionName, params, cached.GitHubUser)
+			if err != nil {
+				return fmt.Errorf("approval flow failed: %w", err)
+			}
+			if !confirmed {
+				return fmt.Errorf("action cancelled by user")
+			}
+		}
+
 		result, err := executeAction(cfg, actionName, params, cached.AccessToken, cached.GitHubUser)
 		if err != nil {
 			fmt.Printf("Cached token failed, re-authorizing...\n")

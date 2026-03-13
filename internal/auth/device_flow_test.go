@@ -19,7 +19,7 @@ func TestRequestDeviceCode(t *testing.T) {
 			t.Fatalf("expected scope=repo, got %s", r.URL.Query().Get("scope"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(DeviceCodeResponse{
+		_ = json.NewEncoder(w).Encode(DeviceCodeResponse{
 			DeviceCode:      "device-123",
 			UserCode:        "ABCD-1234",
 			VerificationURI: "https://github.com/login/device",
@@ -47,12 +47,12 @@ func TestPollForToken_Success(t *testing.T) {
 		callCount++
 		w.Header().Set("Content-Type", "application/json")
 		if callCount < 2 {
-			json.NewEncoder(w).Encode(tokenPollResponse{
+			_ = json.NewEncoder(w).Encode(tokenPollResponse{
 				Error: "authorization_pending",
 			})
 			return
 		}
-		json.NewEncoder(w).Encode(tokenPollResponse{
+		_ = json.NewEncoder(w).Encode(tokenPollResponse{
 			AccessToken: "gho_test_token_123",
 			TokenType:   "bearer",
 		})

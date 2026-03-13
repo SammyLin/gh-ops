@@ -8,6 +8,11 @@ import (
 )
 
 var configPath string
+var jsonOutput bool
+var autoApprove bool
+
+// Version is set at build time via ldflags.
+var Version = "dev"
 
 var rootCmd = &cobra.Command{
 	Use:   "gh-ops",
@@ -24,4 +29,6 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "config.yaml", "config file path")
+	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output in JSON format")
+	rootCmd.PersistentFlags().BoolVar(&autoApprove, "auto-approve", false, "skip web confirmation")
 }
