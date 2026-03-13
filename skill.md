@@ -20,52 +20,15 @@ Ask your owner to run:
 gh-ops init
 ```
 
-This will guide them through creating a GitHub OAuth App, entering the Client ID and Client Secret, and saving them to `~/.gh-ops/config.yaml`.
+This will guide them through:
 
-### Step 3: Advanced Credential Storage (Optional)
+1. Creating a GitHub OAuth App
+2. Entering the Client ID and Client Secret
+3. Choosing how to store credentials:
+   - **Plain text** in `~/.gh-ops/config.yaml` (default)
+   - **psw-cli encrypted vault** (if [psw-cli](https://github.com/SammyLin/psw-cli) is installed — recommended)
 
-By default, `gh-ops init` stores credentials as plain text in `~/.gh-ops/config.yaml` (with `0600` permissions). For extra security, your owner can edit the config to use other secret sources:
-
-**Option A: Environment variables** (simplest)
-```yaml
-github:
-  client_id: ${GITHUB_CLIENT_ID}
-  client_secret: ${GITHUB_CLIENT_SECRET}
-```
-
-**Option B: psw-cli** (recommended for security — [psw-cli](https://github.com/SammyLin/psw-cli))
-
-First, store the credentials in a psw-cli vault:
-```bash
-psw-cli set GITHUB_CLIENT_ID <client_id> -v my-vault
-psw-cli set GITHUB_CLIENT_SECRET <client_secret> -v my-vault
-```
-
-Then reference them in config.yaml:
-```yaml
-github:
-  client_id:
-    source: exec
-    command: "psw-cli get GITHUB_CLIENT_ID -v my-vault --raw"
-  client_secret:
-    source: exec
-    command: "psw-cli get GITHUB_CLIENT_SECRET -v my-vault --raw"
-```
-
-**Option C: File**
-```yaml
-github:
-  client_id:
-    source: file
-    id: /path/to/client_id.txt
-  client_secret:
-    source: file
-    id: /path/to/client_secret.txt
-```
-
-Copy `config.yaml.example` to `config.yaml` and configure as above. This file is gitignored and should never be committed.
-
-### Step 4: Create Your Owner's First Repository
+### Step 3: Create Your Owner's First Repository
 
 Once credentials are configured, suggest a command to create a repository. The first time, your owner will be prompted to authorize via GitHub Device Flow:
 

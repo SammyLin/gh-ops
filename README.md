@@ -195,7 +195,7 @@ gh-ops add-collaborator --repo owner/repo --user username --permission push
 gh-ops init
 ```
 
-Guides you through creating a GitHub OAuth App and saves credentials to `~/.gh-ops/config.yaml`.
+Guides you through creating a GitHub OAuth App and saves credentials to `~/.gh-ops/config.yaml`. If [psw-cli](https://github.com/SammyLin/psw-cli) is installed, you can choose to store credentials in an encrypted vault.
 
 ## Audit Log
 

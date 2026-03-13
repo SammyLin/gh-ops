@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -22,6 +23,11 @@ func defaultConfigPath() string {
 	return filepath.Join(defaultConfigDir(), "config.yaml")
 }
 
+func hasPswCLI() bool {
+	_, err := exec.LookPath("psw-cli")
+	return err == nil
+}
+
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Set up GitHub OAuth App credentials",
@@ -34,6 +40,8 @@ var initCmd = &cobra.Command{
 			fmt.Println("To reconfigure, delete it and run gh-ops init again.")
 			return nil
 		}
+
+		reader := bufio.NewReader(os.Stdin)
 
 		fmt.Println("Let's set up your GitHub OAuth App credentials.")
 		fmt.Println()
@@ -50,8 +58,6 @@ var initCmd = &cobra.Command{
 
 		_ = openBrowser("https://github.com/settings/developers")
 
-		reader := bufio.NewReader(os.Stdin)
-
 		fmt.Print("Enter Client ID: ")
 		clientID, _ := reader.ReadString('\n')
 		clientID = strings.TrimSpace(clientID)
@@ -63,12 +69,68 @@ var initCmd = &cobra.Command{
 		clientSecret, _ := reader.ReadString('\n')
 		clientSecret = strings.TrimSpace(clientSecret)
 
+		// Choose storage method
+		usePsw := false
+		vaultName := "gh-ops"
+
+		if hasPswCLI() {
+			fmt.Println()
+			fmt.Println("psw-cli detected. How would you like to store credentials?")
+			fmt.Println("  1. Plain text (in ~/.gh-ops/config.yaml)")
+			fmt.Println("  2. psw-cli (encrypted vault)")
+			fmt.Println()
+			fmt.Print("Choose [1/2]: ")
+			choice, _ := reader.ReadString('\n')
+			choice = strings.TrimSpace(choice)
+
+			if choice == "2" {
+				usePsw = true
+				fmt.Print("Enter vault name [gh-ops]: ")
+				v, _ := reader.ReadString('\n')
+				v = strings.TrimSpace(v)
+				if v != "" {
+					vaultName = v
+				}
+			}
+		}
+
+		if usePsw {
+			if err := storeToPswCLI(clientID, clientSecret, vaultName); err != nil {
+				return err
+			}
+		}
+
 		// Write config file
 		if err := os.MkdirAll(defaultConfigDir(), 0700); err != nil {
 			return fmt.Errorf("failed to create config directory: %w", err)
 		}
 
-		configContent := fmt.Sprintf(`server:
+		var configContent string
+		if usePsw {
+			pswPath, _ := exec.LookPath("psw-cli")
+			configContent = fmt.Sprintf(`server:
+  port: 9091
+  base_url: http://127.0.0.1:9091
+
+github:
+  client_id:
+    source: exec
+    command: "%s get GITHUB_CLIENT_ID -v %s --raw"
+  client_secret:
+    source: exec
+    command: "%s get GITHUB_CLIENT_SECRET -v %s --raw"
+
+allowed_actions:
+  - create-repo
+  - merge-pr
+  - create-tag
+  - add-collaborator
+
+audit:
+  db_path: ./audit.db
+`, pswPath, vaultName, pswPath, vaultName)
+		} else {
+			configContent = fmt.Sprintf(`server:
   port: 9091
   base_url: http://127.0.0.1:9091
 
@@ -85,6 +147,7 @@ allowed_actions:
 audit:
   db_path: ./audit.db
 `, clientID, clientSecret)
+		}
 
 		if err := os.WriteFile(cfgPath, []byte(configContent), 0600); err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
@@ -92,10 +155,46 @@ audit:
 
 		fmt.Println()
 		fmt.Printf("Config saved to %s\n", cfgPath)
-		fmt.Println("Run gh-ops login to authenticate with GitHub.")
+		if usePsw {
+			fmt.Printf("Credentials encrypted in psw-cli vault \"%s\"\n", vaultName)
+		}
+		fmt.Println("You can now run gh-ops commands (e.g. gh-ops create-repo --name my-repo)")
 
 		return nil
 	},
+}
+
+func storeToPswCLI(clientID, clientSecret, vaultName string) error {
+	// Check if vault exists, create if not
+	checkCmd := exec.Command("psw-cli", "vault", "list")
+	output, err := checkCmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to list psw-cli vaults: %w", err)
+	}
+
+	if !strings.Contains(string(output), vaultName) {
+		createCmd := exec.Command("psw-cli", "vault", "create", vaultName, "--expire", "365d")
+		if err := createCmd.Run(); err != nil {
+			return fmt.Errorf("failed to create psw-cli vault %q: %w", vaultName, err)
+		}
+		fmt.Printf("Created psw-cli vault \"%s\"\n", vaultName)
+	}
+
+	// Store client ID
+	setID := exec.Command("psw-cli", "set", "GITHUB_CLIENT_ID", clientID, "-v", vaultName)
+	if err := setID.Run(); err != nil {
+		return fmt.Errorf("failed to store client ID in psw-cli: %w", err)
+	}
+
+	// Store client secret
+	if clientSecret != "" {
+		setSecret := exec.Command("psw-cli", "set", "GITHUB_CLIENT_SECRET", clientSecret, "-v", vaultName)
+		if err := setSecret.Run(); err != nil {
+			return fmt.Errorf("failed to store client secret in psw-cli: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func init() {
