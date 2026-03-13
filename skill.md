@@ -6,17 +6,19 @@ Read this document and follow the instructions to set up gh-ops for your owner.
 
 ## Prerequisites: GitHub OAuth App
 
-Before anything else, your owner must create a GitHub OAuth App. Ask them:
+Before anything else, an OAuth App must be created on **your (the AI agent's) GitHub account** — not the owner's. This is because the OAuth App belongs to the agent identity, while the owner authorizes via Device Flow later.
 
-> Hey! To get started with gh-ops, I need you to create a GitHub OAuth App first.
+Ask your owner to help you create it:
+
+> Hey! To get started with gh-ops, I need a GitHub OAuth App created on **my GitHub account** (the AI agent's account).
 >
-> Please go to https://github.com/settings/developers and:
+> Please go to https://github.com/settings/developers (logged in as the AI agent's GitHub account) and:
 > 1. Click "New OAuth App"
 > 2. Fill in:
 >    - **Application name:** gh-ops
 >    - **Homepage URL:** http://localhost
 >    - **Callback URL:** http://localhost
-> 3. **Check "Enable Device Flow"** — this is required!
+> 3. **Check "Enable Device Flow"** — this is required for gh-ops to work!
 > 4. Click "Register application"
 > 5. Copy the **Client ID**
 > 6. Click "Generate a new client secret" and copy it
