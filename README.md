@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/SammyLin/gh-ops)](https://goreportcard.com/report/github.com/SammyLin/gh-ops)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-**One-click GitHub operations via OAuth.** A lightweight Go CLI tool that lets agents suggest commands — users run them, authenticate with GitHub, and the operation executes.
+**One-click GitHub operations via OAuth.** A lightweight Go CLI tool that lets agents suggest commands — users run them, authenticate with GitHub Device Flow, and the operation executes after web confirmation.
 
 ## Why gh-ops?
 
@@ -15,38 +15,27 @@
 >
 > **Solution:** gh-ops lets agents suggest CLI commands that require my OAuth authorization. I run the command, authenticate once, and the agent can operate on my behalf.
 
-**Before:**
-- Agent: "Can you create a repo?"
-- Me: (5 minutes later) "Done, here's the link"
-- Repeat for every project...
-
-**After:**
-- Agent: "Run `gh-ops create-repo --name my-repo`"
-- Me: (runs command, 1 click to approve in browser)
-- Agent: (works automatically)
-
 ## Features
 
-- **One-click operations** — Create repos, merge PRs, create tags, add collaborators
-- **GitHub OAuth** — Secure user authorization via ephemeral localhost server and browser flow
+- **Web confirmation** — Every action requires user approval on a confirmation page before executing
+- **GitHub Device Flow** — Secure OAuth via GitHub's Device Flow (no browser redirect needed)
 - **Token caching** — OAuth token cached locally at `~/.config/gh-ops/token.json`
+- **JSON output** — Machine-readable output for bot/automation integrations (e.g., Telegram)
+- **Auto-approve mode** — Skip confirmation with `--auto-approve` for trusted pipelines
 - **Audit logging** — Every action logged to SQLite with user, parameters, and result
 - **Action allowlist** — Configure which operations are permitted via `config.yaml`
-- **Embedded templates** — Static assets bundled into the binary via `embed.FS`
 - **Single binary** — No external dependencies at runtime
 
 ## Flow
 
 ```
-User runs CLI command -> Ephemeral server starts -> Browser opens confirm page -> GitHub OAuth -> Action executes -> Server shuts down
+User runs CLI command
+  -> GitHub Device Flow auth (first time, then cached)
+  -> Confirmation page served on localhost
+  -> User clicks "Confirm"
+  -> Action executes
+  -> Server shuts down
 ```
-
-1. Agent suggests: `gh-ops create-repo --name my-repo --visibility public`
-2. User runs the command
-3. Ephemeral localhost server starts, browser opens confirmation page
-4. User clicks "Confirm" — redirects to GitHub OAuth consent (first time only, token cached after)
-5. Action executes using user's authorization
-6. Result displayed in browser, server shuts down
 
 ## Installation
 
@@ -71,23 +60,6 @@ cd gh-ops
 go build -o gh-ops .
 ```
 
-### macOS Gatekeeper Warning (for local binary)
-
-If you see a security warning when running gh-ops locally for the first time:
-
-> "Apple cannot verify whether gh-ops is malicious software"
-
-This is because gh-ops is not notarized by Apple. To allow it:
-
-1. Go to **System Settings** -> **Privacy & Security**
-2. Click **"Open Anyway"** (or "Still Open")
-
-Or disable Gatekeeper temporarily:
-
-```bash
-sudo spctl --master-disable
-```
-
 ## Configuration
 
 ### config.yaml
@@ -99,7 +71,6 @@ server:
 
 github:
   client_id: ${GITHUB_CLIENT_ID}
-  client_secret: ${GITHUB_CLIENT_SECRET}
 
 allowed_actions:
   - create-repo
@@ -115,25 +86,57 @@ Environment variables are expanded in the config file using `${VAR}` syntax.
 
 ### Environment Variables
 
-| Variable              | Description                      | Default              |
-|-----------------------|----------------------------------|----------------------|
-| `GITHUB_CLIENT_ID`    | GitHub OAuth App client ID       | —                    |
-| `GITHUB_CLIENT_SECRET`| GitHub OAuth App client secret   | —                    |
-
-## Usage
+| Variable           | Description                 |
+|--------------------|-----------------------------|
+| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID  |
 
 ### Setup
 
 1. Create a [GitHub OAuth App](https://github.com/settings/developers)
-   - Callback URL: `http://localhost:9091/auth/callback`
+   - No callback URL needed (uses Device Flow)
    - Scopes needed: `repo`
 
-2. Configure environment variables or `config.yaml`:
+2. Set the environment variable:
 
 ```bash
 export GITHUB_CLIENT_ID=your_client_id
-export GITHUB_CLIENT_SECRET=your_client_secret
 ```
+
+## Usage
+
+### Global Flags
+
+| Flag              | Description                                    |
+|-------------------|------------------------------------------------|
+| `--config`        | Path to config file (default: `config.yaml`)   |
+| `--json`          | Output in JSON format (for bot integrations)   |
+| `--auto-approve`  | Skip web confirmation, execute immediately     |
+
+### Usage Modes
+
+| Command | Behavior |
+|---------|----------|
+| `gh-ops create-repo --name x` | Auth -> Confirmation page -> Execute |
+| `gh-ops create-repo --name x --auto-approve` | Auth -> Execute immediately |
+| `gh-ops create-repo --name x --json` | JSON output + Confirmation page (for Telegram/bots) |
+| `gh-ops create-repo --name x --json --auto-approve` | JSON output + Execute immediately |
+
+### JSON Output
+
+When using `--json`, gh-ops outputs newline-delimited JSON events:
+
+```jsonl
+{"event":"auth_required","verification_uri":"https://github.com/login/device","user_code":"ABCD-1234"}
+{"event":"approval_required","approval_url":"http://localhost:9091/confirm?token=..."}
+{"event":"success","user":"SammyLin","result":"SammyLin/my-repo created"}
+```
+
+| Event               | Description                                       |
+|---------------------|---------------------------------------------------|
+| `auth_required`     | User needs to visit URL and enter code             |
+| `approval_required` | User needs to open URL and click Confirm           |
+| `success`           | Action completed successfully                      |
+| `error`             | Action failed                                      |
 
 ### Commands
 
@@ -195,51 +198,6 @@ gh-ops logout
 
 Removes the cached OAuth token from `~/.config/gh-ops/token.json`.
 
-#### Global Flags
-
-| Flag       | Description                          |
-|------------|--------------------------------------|
-| `--config` | Path to config file (default: `config.yaml`) |
-
-## Directory Structure
-
-```
-gh-ops/
-├── main.go                      # Entry point, embed templates
-├── cmd/
-│   ├── root.go                  # Cobra root command
-│   ├── create_repo.go           # create-repo subcommand
-│   ├── merge_pr.go              # merge-pr subcommand
-│   ├── create_tag.go            # create-tag subcommand
-│   ├── add_collaborator.go      # add-collaborator subcommand
-│   ├── logout.go                # logout subcommand
-│   └── local_server.go          # Ephemeral OAuth server
-├── internal/
-│   ├── actions/
-│   │   └── handler.go           # GitHub API operations
-│   ├── auth/
-│   │   ├── token_store.go       # Local token cache
-│   │   ├── token_store_test.go  # Token cache tests
-│   │   └── github_user.go       # GitHub user fetch
-│   ├── audit/
-│   │   └── audit.go             # SQLite audit logging
-│   └── config/
-│       ├── config.go            # YAML config loader
-│       └── config_test.go       # Config tests
-├── web/
-│   ├── static/
-│   │   └── css/
-│   │       └── app.css          # Tailwind CSS v4
-│   └── templates/
-│       ├── base.html            # Base layout with Tailwind
-│       ├── confirm.html         # Action confirmation page
-│       ├── result.html          # Success result page
-│       └── error.html           # Error page
-├── config.yaml                  # Configuration file
-├── .goreleaser.yml              # Release automation
-└── README.md
-```
-
 ## Audit Log
 
 Every action is logged to SQLite:
@@ -254,11 +212,15 @@ Every action is logged to SQLite:
 
 ## Security
 
-- **CSRF protection** — OAuth state parameter validated on callback
 - **Action allowlist** — Only explicitly allowed actions can execute
-- **Token caching** — OAuth token stored locally at `~/.config/gh-ops/token.json`
-- **Ephemeral server** — Localhost server runs only during the OAuth/action flow, then shuts down
+- **Web confirmation** — Every action requires explicit user approval (unless `--auto-approve`)
+- **Token caching** — OAuth token stored locally at `~/.config/gh-ops/token.json` with `0600` permissions
+- **Ephemeral server** — Confirmation server runs only during the approval flow, then shuts down
 - **Environment variables** — Secrets loaded from env, never hardcoded
+
+## For AI Agents
+
+Read https://raw.githubusercontent.com/SammyLin/gh-ops/refs/heads/main/skill.md and follow the instructions to set up gh-ops for your owner.
 
 ## Development
 
