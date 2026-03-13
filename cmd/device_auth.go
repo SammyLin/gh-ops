@@ -65,7 +65,7 @@ func runDeviceFlow(cfg *config.Config, actionName string, params map[string]stri
 	if auditErr != nil {
 		log.Printf("Warning: audit log disabled: %v", auditErr)
 	} else {
-		defer auditLogger.Close()
+		defer func() { _ = auditLogger.Close() }()
 		logResult := "success"
 		if err != nil {
 			logResult = "error: " + err.Error()

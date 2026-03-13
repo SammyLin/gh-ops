@@ -42,7 +42,7 @@ func RequestDeviceCode(endpoint, clientID, scope string) (*DeviceCodeResponse, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to request device code: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("device code request failed with status %d", resp.StatusCode)
@@ -81,10 +81,10 @@ func PollForToken(endpoint, clientID, deviceCode string, interval int) (string, 
 
 		var result tokenPollResponse
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			return "", fmt.Errorf("failed to decode token response: %w", err)
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 
 		switch result.Error {
 		case "":
